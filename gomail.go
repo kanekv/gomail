@@ -108,6 +108,11 @@ func (msg *Message) SetHeader(field string, value ...string) {
 	msg.header[field] = value
 }
 
+// SetRawHeader sets a value to the given header field without encoding
+func (msg *Message) SetRawHeader(field string, value ...string) {
+    msg.header[field] = value
+}
+
 func (msg *Message) encodeHeader(value string) string {
 	return msg.hEncoder.Encode(value)
 }
