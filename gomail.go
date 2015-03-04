@@ -139,7 +139,10 @@ func (msg *Message) SetAddressHeader(field, address, name string) {
 
 // FormatAddress formats an address and a name as a valid RFC 5322 address.
 func (msg *Message) FormatAddress(address, name string) string {
-	return msg.encodeHeader(name) + " <" + address + ">"
+    if len(name) > 0 {
+        return msg.encodeHeader(name) + " <" + address + ">"
+    }
+    return address
 }
 
 // SetDateHeader sets a date to the given header field.
