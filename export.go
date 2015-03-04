@@ -28,7 +28,7 @@ func (msg *Message) Export() *mail.Message {
 	}
 	for _, part := range msg.parts {
 		h := make(map[string][]string)
-        h["MIME-Version"] = []string{"1.0"}
+		h["MIME-Version"] = []string{"1.0"}
 		h["Content-Type"] = []string{part.contentType + "; charset=" + msg.charset}
 		h["Content-Transfer-Encoding"] = []string{string(msg.encoding)}
 

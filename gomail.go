@@ -110,7 +110,7 @@ func (msg *Message) SetHeader(field string, value ...string) {
 
 // SetRawHeader sets a value to the given header field without encoding
 func (msg *Message) SetRawHeader(field string, value ...string) {
-    msg.header[field] = value
+	msg.header[field] = value
 }
 
 func (msg *Message) encodeHeader(value string) string {
@@ -139,10 +139,10 @@ func (msg *Message) SetAddressHeader(field, address, name string) {
 
 // FormatAddress formats an address and a name as a valid RFC 5322 address.
 func (msg *Message) FormatAddress(address, name string) string {
-    if len(name) > 0 {
-        return msg.encodeHeader(name) + " <" + address + ">"
-    }
-    return address
+	if len(name) > 0 {
+		return msg.encodeHeader(name) + " <" + address + ">"
+	}
+	return address
 }
 
 // SetDateHeader sets a date to the given header field.
