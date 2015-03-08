@@ -189,11 +189,13 @@ func TestAlternative(t *testing.T) {
 			"--_BOUNDARY_1_\r\n" +
 			"Content-Type: text/plain; charset=UTF-8\r\n" +
 			"Content-Transfer-Encoding: quoted-printable\r\n" +
+			"Mime-Version: 1.0\r\n" +
 			"\r\n" +
 			"=C2=A1Hola, se=C3=B1or!\r\n" +
 			"--_BOUNDARY_1_\r\n" +
 			"Content-Type: text/html; charset=UTF-8\r\n" +
 			"Content-Transfer-Encoding: quoted-printable\r\n" +
+			"Mime-Version: 1.0\r\n" +
 			"\r\n" +
 			"=C2=A1<b>Hola</b>, <i>se=C3=B1or</i>!</h1>\r\n" +
 			"--_BOUNDARY_1_--\r\n",
@@ -248,6 +250,7 @@ func TestAttachment(t *testing.T) {
 			"--_BOUNDARY_1_\r\n" +
 			"Content-Type: text/plain; charset=UTF-8\r\n" +
 			"Content-Transfer-Encoding: quoted-printable\r\n" +
+			"Mime-Version: 1.0\r\n" +
 			"\r\n" +
 			"Test\r\n" +
 			"--_BOUNDARY_1_\r\n" +
@@ -312,6 +315,7 @@ func TestAttachments(t *testing.T) {
 			"--_BOUNDARY_1_\r\n" +
 			"Content-Type: text/plain; charset=UTF-8\r\n" +
 			"Content-Transfer-Encoding: quoted-printable\r\n" +
+			"Mime-Version: 1.0\r\n" +
 			"\r\n" +
 			"Test\r\n" +
 			"--_BOUNDARY_1_\r\n" +
@@ -352,6 +356,7 @@ func TestEmbedded(t *testing.T) {
 			"--_BOUNDARY_1_\r\n" +
 			"Content-Type: text/plain; charset=UTF-8\r\n" +
 			"Content-Transfer-Encoding: quoted-printable\r\n" +
+			"Mime-Version: 1.0\r\n" +
 			"\r\n" +
 			"Test\r\n" +
 			"--_BOUNDARY_1_\r\n" +
@@ -399,11 +404,13 @@ func TestFullMessage(t *testing.T) {
 			"--_BOUNDARY_3_\r\n" +
 			"Content-Type: text/plain; charset=UTF-8\r\n" +
 			"Content-Transfer-Encoding: quoted-printable\r\n" +
+			"Mime-Version: 1.0\r\n" +
 			"\r\n" +
 			"=C2=A1Hola, se=C3=B1or!\r\n" +
 			"--_BOUNDARY_3_\r\n" +
 			"Content-Type: text/html; charset=UTF-8\r\n" +
 			"Content-Transfer-Encoding: quoted-printable\r\n" +
+			"Mime-Version: 1.0\r\n" +
 			"\r\n" +
 			"=C2=A1<b>Hola</b>, <i>se=C3=B1or</i>!</h1>\r\n" +
 			"--_BOUNDARY_3_--\r\n" +
