@@ -4,10 +4,10 @@ import (
 	"bytes"
 	"encoding/base64"
 	"io"
-	"mime/multipart"
 	"net/mail"
 	"time"
 
+	patchedMulipart "github.com/Kane-Sendgrid/gomail/patch/mime/multipart"
 	"gopkg.in/alexcesaro/quotedprintable.v1"
 )
 
@@ -67,7 +67,7 @@ func (msg *Message) hasAlternativePart() bool {
 type messageWriter struct {
 	header     map[string][]string
 	buf        *bytes.Buffer
-	writers    [3]*multipart.Writer
+	writers    [3]*patchedMulipart.Writer
 	partWriter io.Writer
 	depth      uint8
 }
@@ -93,7 +93,7 @@ func newMessageWriter(msg *Message) *messageWriter {
 var now = time.Now
 
 func (w *messageWriter) openMultipart(mimeType string) {
-	w.writers[w.depth] = multipart.NewWriter(w.buf)
+	w.writers[w.depth] = patchedMulipart.NewWriter(w.buf)
 	contentType := "multipart/" + mimeType + "; boundary=" + w.writers[w.depth].Boundary()
 
 	if w.depth == 0 {
