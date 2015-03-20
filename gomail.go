@@ -9,9 +9,10 @@ import (
 	"io/ioutil"
 	"mime"
 	"path/filepath"
+	"sync"
 	"time"
 
-	"gopkg.in/alexcesaro/quotedprintable.v1"
+	"gopkg.in/alexcesaro/quotedprintable.v2"
 )
 
 // Message represents an email.
@@ -103,7 +104,7 @@ const (
 // SetHeader sets a value to the given header field.
 func (msg *Message) SetHeader(field string, value ...string) {
 	for i := range value {
-		value[i] = msg.encodeHeader(value[i])
+		value[i] = encodeHeader(msg.hEncoder, value[i])
 	}
 	msg.header[field] = value
 }
@@ -111,10 +112,6 @@ func (msg *Message) SetHeader(field string, value ...string) {
 // SetRawHeader sets a value to the given header field without encoding
 func (msg *Message) SetRawHeader(field string, value ...string) {
 	msg.header[field] = value
-}
-
-func (msg *Message) encodeHeader(value string) string {
-	return msg.hEncoder.Encode(value)
 }
 
 // SetHeaders sets the message headers.
@@ -139,10 +136,28 @@ func (msg *Message) SetAddressHeader(field, address, name string) {
 
 // FormatAddress formats an address and a name as a valid RFC 5322 address.
 func (msg *Message) FormatAddress(address, name string) string {
-	if len(name) > 0 {
-		return msg.encodeHeader(name) + " <" + address + ">"
+	if name == "" {
+		return address
 	}
-	return address
+	buf := getBuffer()
+	defer putBuffer(buf)
+
+	if !quotedprintable.NeedsEncoding(name) {
+		quote(buf, name)
+	} else {
+		var n string
+		if hasSpecials(name) {
+			n = encodeHeader(quotedprintable.B.NewHeaderEncoder(msg.charset), name)
+		} else {
+			n = encodeHeader(msg.hEncoder, name)
+		}
+		buf.WriteString(n)
+	}
+	buf.WriteString(" <")
+	buf.WriteString(address)
+	buf.WriteByte('>')
+
+	return buf.String()
 }
 
 // SetDateHeader sets a date to the given header field.
@@ -277,3 +292,51 @@ func (msg *Message) Embed(image ...*File) {
 
 // Stubbed out for testing.
 var readFile = ioutil.ReadFile
+
+func quote(buf *bytes.Buffer, text string) {
+	buf.WriteByte('"')
+	for i := 0; i < len(text); i++ {
+		if text[i] == '\\' || text[i] == '"' {
+			buf.WriteByte('\\')
+		}
+		buf.WriteByte(text[i])
+	}
+	buf.WriteByte('"')
+}
+
+func hasSpecials(text string) bool {
+	for i := 0; i < len(text); i++ {
+		switch c := text[i]; c {
+		case '(', ')', '<', '>', '[', ']', ':', ';', '@', '\\', ',', '.', '"':
+			return true
+		}
+	}
+
+	return false
+}
+
+func encodeHeader(enc *quotedprintable.HeaderEncoder, value string) string {
+	if !quotedprintable.NeedsEncoding(value) {
+		return value
+	}
+
+	return enc.Encode(value)
+}
+
+var bufPool = sync.Pool{
+	New: func() interface{} {
+		return new(bytes.Buffer)
+	},
+}
+
+func getBuffer() *bytes.Buffer {
+	return bufPool.Get().(*bytes.Buffer)
+}
+
+func putBuffer(buf *bytes.Buffer) {
+	if buf.Len() > 1024 {
+		return
+	}
+	buf.Reset()
+	bufPool.Put(buf)
+}

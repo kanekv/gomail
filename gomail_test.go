@@ -21,6 +21,8 @@ func TestMessage(t *testing.T) {
 	msg := NewMessage()
 	msg.SetAddressHeader("From", "from@example.com", "Señor From")
 	msg.SetHeader("To", msg.FormatAddress("to@example.com", "Señor To"), "tobis@example.com")
+	msg.SetAddressHeader("Cc", "cc@example.com", "A, B")
+	msg.SetAddressHeader("X-To", "ccbis@example.com", "à, b")
 	msg.SetDateHeader("X-Date", stubNow())
 	msg.SetHeader("X-Date-2", msg.FormatDate(stubNow()))
 	msg.SetHeader("Subject", "¡Hola, señor!")
@@ -34,9 +36,12 @@ func TestMessage(t *testing.T) {
 		to: []string{
 			"to@example.com",
 			"tobis@example.com",
+			"cc@example.com",
 		},
 		content: "From: =?UTF-8?Q?Se=C3=B1or_From?= <from@example.com>\r\n" +
 			"To: =?UTF-8?Q?Se=C3=B1or_To?= <to@example.com>, tobis@example.com\r\n" +
+			"Cc: \"A, B\" <cc@example.com>\r\n" +
+			"X-To: =?UTF-8?B?w6AsIGI=?= <ccbis@example.com>\r\n" +
 			"X-Date: Wed, 25 Jun 2014 17:46:00 +0000\r\n" +
 			"X-Date-2: Wed, 25 Jun 2014 17:46:00 +0000\r\n" +
 			"X-Headers: Test, =?UTF-8?Q?Caf=C3=A9?=\r\n" +
