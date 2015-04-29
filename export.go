@@ -8,7 +8,7 @@ import (
 	"time"
 
 	patchedMulipart "github.com/Kane-Sendgrid/gomail/patch/mime/multipart"
-	"gopkg.in/alexcesaro/quotedprintable.v1"
+	"gopkg.in/alexcesaro/quotedprintable.v2"
 )
 
 // Export converts the message into a net/mail.Message.
@@ -47,8 +47,26 @@ func (msg *Message) Export() *mail.Message {
 	if msg.hasMixedPart() {
 		w.closeMultipart()
 	}
+	msg.msgWriter = w
 
 	return w.export()
+}
+
+// Reset resets all state in Message and returns all used buffers to the pool.
+// The initial settings used to create the instance are preserved so the
+// instance can be safely reused to create a new message.
+func (msg *Message) Reset() {
+	for _, part := range msg.parts {
+		putBuffer(part.body)
+	}
+	msg.parts = nil
+	if msg.msgWriter != nil {
+		putBuffer(msg.msgWriter.buf)
+		msg.msgWriter = nil
+	}
+	msg.header = make(header)
+	msg.attachments = nil
+	msg.embedded = nil
 }
 
 func (msg *Message) hasMixedPart() bool {
@@ -86,7 +104,7 @@ func newMessageWriter(msg *Message) *messageWriter {
 		header["Date"] = []string{msg.FormatDate(now())}
 	}
 
-	return &messageWriter{header: header, buf: new(bytes.Buffer)}
+	return &messageWriter{header: header, buf: getBuffer()}
 }
 
 // Stubbed out for testing.
