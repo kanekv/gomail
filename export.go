@@ -4,10 +4,10 @@ import (
 	"bytes"
 	"encoding/base64"
 	"io"
-	"mime/multipart"
 	"net/mail"
 	"time"
 
+	patchedMulipart "github.com/Kane-Sendgrid/gomail/patch/mime/multipart"
 	"gopkg.in/alexcesaro/quotedprintable.v2"
 )
 
