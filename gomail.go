@@ -132,11 +132,11 @@ func (msg *Message) SetHeaders(h map[string][]string) {
 
 // SetAddressHeader sets an address to the given header field.
 func (msg *Message) SetAddressHeader(field, address, name string) {
-	msg.header[field] = []string{msg.FormatAddress(address, name)}
+	msg.header[field] = []string{msg.FormatAddress(address, name, false)}
 }
 
 // FormatAddress formats an address and a name as a valid RFC 5322 address.
-func (msg *Message) FormatAddress(address, name string) string {
+func (msg *Message) FormatAddress(address, name string, useQuotes bool) string {
 	if name == "" {
 		return address
 	}
@@ -152,7 +152,13 @@ func (msg *Message) FormatAddress(address, name string) string {
 		} else {
 			n = encodeHeader(msg.hEncoder, name)
 		}
+		if useQuotes {
+			buf.WriteByte('"')
+		}
 		buf.WriteString(n)
+		if useQuotes {
+			buf.WriteByte('"')
+		}
 	}
 	buf.WriteString(" <")
 	buf.WriteString(address)
