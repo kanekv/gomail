@@ -240,6 +240,7 @@ type File struct {
 	MimeType  string
 	Content   []byte
 	ContentID string
+	encoded bool
 }
 
 // OpenFile opens a file on disk to create a gomail.File.
@@ -265,6 +266,21 @@ func CreateFile(name string, content []byte) *File {
 		Name:     name,
 		MimeType: mimeType,
 		Content:  content,
+	}
+}
+
+// CreateFile creates a gomail.File from the given name and content.
+func CreateEncodedFile(name string, content []byte) *File {
+	mimeType := mime.TypeByExtension(filepath.Ext(name))
+	if mimeType == "" {
+		mimeType = "application/octet-stream"
+	}
+
+	return &File{
+		Name:     name,
+		MimeType: mimeType,
+		Content:  content,
+		encoded: true,
 	}
 }
 

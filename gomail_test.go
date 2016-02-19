@@ -302,6 +302,44 @@ func TestAttachmentsOnly(t *testing.T) {
 	testMessage(t, msg, 1, want)
 }
 
+func TestBase64EncodedAttachment(t *testing.T) {
+	msg := NewMessage()
+	msg.SetHeader("From", "from@example.com")
+	msg.SetHeader("To", "to@example.com")
+	content1 := "hello"
+	content2 := "goodbye"
+	content1Buf := make([]byte, base64.StdEncoding.EncodedLen(len(content1)))
+	content2Buf := make([]byte, base64.StdEncoding.EncodedLen(len(content2)))
+	base64.StdEncoding.Encode(content1Buf, []byte(content1))
+	base64.StdEncoding.Encode(content2Buf, []byte(content2))
+	msg.Attach(CreateEncodedFile("test.pdf", content1Buf))
+	msg.Attach(CreateEncodedFile("test.zip", content2Buf))
+
+	want := message{
+		from: "from@example.com",
+		to:   []string{"to@example.com"},
+		content: "From: from@example.com\r\n" +
+			"To: to@example.com\r\n" +
+			"Content-Type: multipart/mixed; boundary=_BOUNDARY_1_\r\n" +
+			"\r\n" +
+			"--_BOUNDARY_1_\r\n" +
+			"Content-Type: application/pdf; name=\"test.pdf\"\r\n" +
+			"Content-Disposition: attachment; filename=\"test.pdf\"\r\n" +
+			"Content-Transfer-Encoding: base64\r\n" +
+			"\r\n" +
+			string(content1Buf) + "\r\n" +
+			"--_BOUNDARY_1_\r\n" +
+			"Content-Type: application/zip; name=\"test.zip\"\r\n" +
+			"Content-Disposition: attachment; filename=\"test.zip\"\r\n" +
+			"Content-Transfer-Encoding: base64\r\n" +
+			"\r\n" +
+			string(content2Buf) + "\r\n" +
+			"--_BOUNDARY_1_--\r\n",
+	}
+
+	testMessage(t, msg, 1, want)
+}
+
 func TestAttachments(t *testing.T) {
 	msg := NewMessage()
 	msg.SetHeader("From", "from@example.com")
