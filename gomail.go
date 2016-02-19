@@ -249,7 +249,7 @@ type File struct {
 
 func (f *File) SetEncoding(encoding Encoding) error {
 	if encoding != Base64 && encoding != Base64PreEncoded {
-		return fmt.Errorf("%s is not a valid encoding for File. Must be Base64 or Base64PreEncoded", encoding)
+		return fmt.Errorf("gomail: %s is not a valid encoding for File. Must be Base64 or Base64PreEncoded", encoding)
 	}
 	f.encoding = encoding
 	return nil
