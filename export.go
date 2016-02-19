@@ -152,7 +152,7 @@ func (w *messageWriter) addFiles(files []*File, isAttachment bool) {
 			}
 		}
 
-		w.write(h, f.Content, f.Encoding)
+		w.write(h, f.Content, f.encoding)
 	}
 }
 
@@ -185,7 +185,7 @@ func (w *messageWriter) writeBody(body []byte, enc Encoding) {
 		writer := base64.NewEncoder(base64.StdEncoding, newBase64LineWriter(subWriter))
 		writer.Write(body)
 		writer.Close()
-	} else if enc == Base64Encoded {
+	} else if enc == Base64PreEncoded {
 		newBase64LineWriter(subWriter).Write(body)
 	} else if enc == Unencoded {
 		subWriter.Write(body)

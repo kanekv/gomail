@@ -312,9 +312,20 @@ func TestBase64EncodedAttachment(t *testing.T) {
 	content1Buf := make([]byte, base64.StdEncoding.EncodedLen(len(content1)))
 	base64.StdEncoding.Encode(content1Buf, []byte(content1))
 	file1 := CreateFile("test.pdf", content1Buf)
-	file1.Encoding = Base64Encoded
+	err := file1.SetEncoding(Unencoded)
+
+	if err == nil {
+		t.Errorf("SetEncoding(%s) should have returned an error", Unencoded)
+	}
+
+	err = file1.SetEncoding(Base64PreEncoded)
+
+	if err != nil {
+		t.Errorf("SetEncoding(%s) should not have returned an error: %s", Base64PreEncoded, err.Error())
+	}
+
 	file2 := CreateFile("test.zip", []byte(content2))
-	file2.Encoding = Base64Encoded
+	file2.SetEncoding(Base64PreEncoded)
 	file3 := CreateFile("test.png", []byte(content3))
 	msg.Attach(file1)
 	msg.Attach(file2)
