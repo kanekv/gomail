@@ -308,12 +308,17 @@ func TestBase64EncodedAttachment(t *testing.T) {
 	msg.SetHeader("To", "to@example.com")
 	content1 := "hello"
 	content2 := "goodbye"
+	content3 := "something"
 	content1Buf := make([]byte, base64.StdEncoding.EncodedLen(len(content1)))
-	content2Buf := make([]byte, base64.StdEncoding.EncodedLen(len(content2)))
 	base64.StdEncoding.Encode(content1Buf, []byte(content1))
-	base64.StdEncoding.Encode(content2Buf, []byte(content2))
-	msg.Attach(CreateEncodedFile("test.pdf", content1Buf))
-	msg.Attach(CreateEncodedFile("test.zip", content2Buf))
+	file1 := CreateFile("test.pdf", content1Buf)
+	file1.Encoding = Base64Encoded
+	file2 := CreateFile("test.zip", []byte(content2))
+	file2.Encoding = Base64Encoded
+	file3 := CreateFile("test.png", []byte(content3))
+	msg.Attach(file1)
+	msg.Attach(file2)
+	msg.Attach(file3)
 
 	want := message{
 		from: "from@example.com",
@@ -333,7 +338,13 @@ func TestBase64EncodedAttachment(t *testing.T) {
 			"Content-Disposition: attachment; filename=\"test.zip\"\r\n" +
 			"Content-Transfer-Encoding: base64\r\n" +
 			"\r\n" +
-			string(content2Buf) + "\r\n" +
+			content2 + "\r\n" +
+			"--_BOUNDARY_1_\r\n" +
+			"Content-Type: image/png; name=\"test.png\"\r\n" +
+			"Content-Disposition: attachment; filename=\"test.png\"\r\n" +
+			"Content-Transfer-Encoding: base64\r\n" +
+			"\r\n" +
+			base64.StdEncoding.EncodeToString([]byte(content3)) + "\r\n" +
 			"--_BOUNDARY_1_--\r\n",
 	}
 

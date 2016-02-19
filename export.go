@@ -32,7 +32,7 @@ func (msg *Message) Export() *mail.Message {
 		h["Content-Type"] = []string{part.contentType + "; charset=" + msg.charset}
 		h["Content-Transfer-Encoding"] = []string{string(msg.encoding)}
 
-		w.write(h, part.body.Bytes(), msg.encoding, false)
+		w.write(h, part.body.Bytes(), msg.encoding)
 	}
 	if msg.hasAlternativePart() {
 		w.closeMultipart()
@@ -152,13 +152,13 @@ func (w *messageWriter) addFiles(files []*File, isAttachment bool) {
 			}
 		}
 
-		w.write(h, f.Content, Base64, f.encoded)
+		w.write(h, f.Content, f.Encoding)
 	}
 }
 
-func (w *messageWriter) write(h map[string][]string, body []byte, enc Encoding, encoded bool) {
+func (w *messageWriter) write(h map[string][]string, body []byte, enc Encoding) {
 	w.writeHeader(h)
-	w.writeBody(body, enc, encoded)
+	w.writeBody(body, enc)
 }
 
 func (w *messageWriter) writeHeader(h map[string][]string) {
@@ -171,7 +171,7 @@ func (w *messageWriter) writeHeader(h map[string][]string) {
 	}
 }
 
-func (w *messageWriter) writeBody(body []byte, enc Encoding, encoded bool) {
+func (w *messageWriter) writeBody(body []byte, enc Encoding) {
 	var subWriter io.Writer
 	if w.depth == 0 {
 		subWriter = w.buf
@@ -182,12 +182,10 @@ func (w *messageWriter) writeBody(body []byte, enc Encoding, encoded bool) {
 	// The errors returned by writers are not checked since these writers cannot
 	// return errors.
 	if enc == Base64 {
-		if !encoded {
-			writer := base64.NewEncoder(base64.StdEncoding, newBase64LineWriter(subWriter))
-			writer.Write(body)
-			writer.Close()
-			return
-		}
+		writer := base64.NewEncoder(base64.StdEncoding, newBase64LineWriter(subWriter))
+		writer.Write(body)
+		writer.Close()
+	} else if enc == Base64Encoded {
 		newBase64LineWriter(subWriter).Write(body)
 	} else if enc == Unencoded {
 		subWriter.Write(body)

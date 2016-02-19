@@ -100,6 +100,8 @@ const (
 	// Unencoded can be used to avoid encoding the body of an email. The headers
 	// will still be encoded using quoted-printable encoding.
 	Unencoded Encoding = "8bit"
+	// Base64Encoded represents data that has already been base64 encoded
+	Base64Encoded Encoding = "base64encoded"
 )
 
 // SetHeader sets a value to the given header field.
@@ -240,7 +242,7 @@ type File struct {
 	MimeType  string
 	Content   []byte
 	ContentID string
-	encoded bool
+	Encoding  Encoding
 }
 
 // OpenFile opens a file on disk to create a gomail.File.
@@ -266,23 +268,10 @@ func CreateFile(name string, content []byte) *File {
 		Name:     name,
 		MimeType: mimeType,
 		Content:  content,
+		Encoding: Base64,
 	}
 }
 
-// CreateFile creates a gomail.File from the given name and content.
-func CreateEncodedFile(name string, content []byte) *File {
-	mimeType := mime.TypeByExtension(filepath.Ext(name))
-	if mimeType == "" {
-		mimeType = "application/octet-stream"
-	}
-
-	return &File{
-		Name:     name,
-		MimeType: mimeType,
-		Content:  content,
-		encoded: true,
-	}
-}
 
 // Attach attaches the files to the email.
 func (msg *Message) Attach(f ...*File) {
