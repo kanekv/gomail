@@ -140,6 +140,8 @@ func (w *messageWriter) addFiles(files []*File, isAttachment bool) {
 	for _, f := range files {
 		h := make(map[string][]string)
 		h["Content-Type"] = []string{f.MimeType + "; name=\"" + f.Name + "\""}
+		// as per the SetEncoding method in gomail.go, we are enforcing the encoding to be either
+		// Base64, or Base64PreEncoded
 		h["Content-Transfer-Encoding"] = []string{string(Base64)}
 		if isAttachment {
 			h["Content-Disposition"] = []string{"attachment; filename=\"" + f.Name + "\""}
@@ -152,7 +154,7 @@ func (w *messageWriter) addFiles(files []*File, isAttachment bool) {
 			}
 		}
 
-		w.write(h, f.Content, Base64)
+		w.write(h, f.Content, f.encoding)
 	}
 }
 
@@ -185,6 +187,8 @@ func (w *messageWriter) writeBody(body []byte, enc Encoding) {
 		writer := base64.NewEncoder(base64.StdEncoding, newBase64LineWriter(subWriter))
 		writer.Write(body)
 		writer.Close()
+	} else if enc == Base64PreEncoded {
+		newBase64LineWriter(subWriter).Write(body)
 	} else if enc == Unencoded {
 		subWriter.Write(body)
 	} else {

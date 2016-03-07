@@ -302,6 +302,66 @@ func TestAttachmentsOnly(t *testing.T) {
 	testMessage(t, msg, 1, want)
 }
 
+func TestBase64EncodedAttachment(t *testing.T) {
+	msg := NewMessage()
+	msg.SetHeader("From", "from@example.com")
+	msg.SetHeader("To", "to@example.com")
+	content1 := "hello"
+	content2 := "goodbye"
+	content3 := "something"
+	content1Buf := make([]byte, base64.StdEncoding.EncodedLen(len(content1)))
+	base64.StdEncoding.Encode(content1Buf, []byte(content1))
+	file1 := CreateFile("test.pdf", content1Buf)
+	err := file1.SetEncoding(Unencoded)
+
+	if err == nil {
+		t.Errorf("SetEncoding(%s) should have returned an error", Unencoded)
+	}
+
+	err = file1.SetEncoding(Base64PreEncoded)
+
+	if err != nil {
+		t.Errorf("SetEncoding(%s) should not have returned an error: %s", Base64PreEncoded, err.Error())
+	}
+
+	file2 := CreateFile("test.zip", []byte(content2))
+	file2.SetEncoding(Base64PreEncoded)
+	file3 := CreateFile("test.png", []byte(content3))
+	msg.Attach(file1)
+	msg.Attach(file2)
+	msg.Attach(file3)
+
+	want := message{
+		from: "from@example.com",
+		to:   []string{"to@example.com"},
+		content: "From: from@example.com\r\n" +
+			"To: to@example.com\r\n" +
+			"Content-Type: multipart/mixed; boundary=_BOUNDARY_1_\r\n" +
+			"\r\n" +
+			"--_BOUNDARY_1_\r\n" +
+			"Content-Type: application/pdf; name=\"test.pdf\"\r\n" +
+			"Content-Disposition: attachment; filename=\"test.pdf\"\r\n" +
+			"Content-Transfer-Encoding: base64\r\n" +
+			"\r\n" +
+			string(content1Buf) + "\r\n" +
+			"--_BOUNDARY_1_\r\n" +
+			"Content-Type: application/zip; name=\"test.zip\"\r\n" +
+			"Content-Disposition: attachment; filename=\"test.zip\"\r\n" +
+			"Content-Transfer-Encoding: base64\r\n" +
+			"\r\n" +
+			content2 + "\r\n" +
+			"--_BOUNDARY_1_\r\n" +
+			"Content-Type: image/png; name=\"test.png\"\r\n" +
+			"Content-Disposition: attachment; filename=\"test.png\"\r\n" +
+			"Content-Transfer-Encoding: base64\r\n" +
+			"\r\n" +
+			base64.StdEncoding.EncodeToString([]byte(content3)) + "\r\n" +
+			"--_BOUNDARY_1_--\r\n",
+	}
+
+	testMessage(t, msg, 1, want)
+}
+
 func TestAttachments(t *testing.T) {
 	msg := NewMessage()
 	msg.SetHeader("From", "from@example.com")

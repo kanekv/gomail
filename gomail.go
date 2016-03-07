@@ -5,6 +5,7 @@ package gomail
 
 import (
 	"bytes"
+	"fmt"
 	"io"
 	"io/ioutil"
 	"mime"
@@ -95,11 +96,14 @@ const (
 	// QuotedPrintable represents the quoted-printable encoding as defined in
 	// RFC 2045.
 	QuotedPrintable Encoding = "quoted-printable"
-	// Base64 represents the base64 encoding as defined in RFC 2045.
+	// Base64 represents the base64 encoding as defined in RFC 2045. If used, gomail will
+	// encode the data in base64
 	Base64 Encoding = "base64"
 	// Unencoded can be used to avoid encoding the body of an email. The headers
 	// will still be encoded using quoted-printable encoding.
 	Unencoded Encoding = "8bit"
+	// Base64PreEncoded represents data that has already been base64 encoded
+	Base64PreEncoded Encoding = "base64preencoded"
 )
 
 // SetHeader sets a value to the given header field.
@@ -240,6 +244,15 @@ type File struct {
 	MimeType  string
 	Content   []byte
 	ContentID string
+	encoding  Encoding
+}
+
+func (f *File) SetEncoding(encoding Encoding) error {
+	if encoding != Base64 && encoding != Base64PreEncoded {
+		return fmt.Errorf("gomail: %s is not a valid encoding for File. Must be Base64 or Base64PreEncoded", encoding)
+	}
+	f.encoding = encoding
+	return nil
 }
 
 // OpenFile opens a file on disk to create a gomail.File.
@@ -265,6 +278,7 @@ func CreateFile(name string, content []byte) *File {
 		Name:     name,
 		MimeType: mimeType,
 		Content:  content,
+		encoding: Base64,
 	}
 }
 
