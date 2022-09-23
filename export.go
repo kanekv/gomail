@@ -242,6 +242,8 @@ func newQpLineWriter(w io.Writer) *qpLineWriter {
 	return &qpLineWriter{w: w}
 }
 
+var newline []byte = []byte("=\r\n")
+
 func (w *qpLineWriter) Write(p []byte) (int, error) {
 	n := 0
 	for len(p) > 0 {
@@ -275,7 +277,7 @@ func (w *qpLineWriter) Write(p []byte) (int, error) {
 
 		// Insert the newline where it is needed
 		w.w.Write(p[:toWrite])
-		w.w.Write([]byte("=\r\n"))
+		w.w.Write(newline)
 		p = p[toWrite:]
 		n += toWrite
 		w.lineLen = 0
